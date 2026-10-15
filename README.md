@@ -76,6 +76,31 @@ Jika muncul `✅ Bot Pinterest berjalan...`, buka Telegram dan chat bot kamu.
 | `/pinterest kucing lucu` | Cari foto "kucing lucu", kirim maks 5 foto |
 | Langsung ketik `wallpaper aesthetic` | Sama, tanpa perlu perintah |
 
+## Deploy ke Railway (bot online 24 jam)
+
+Bot ini sudah siap deploy ke [Railway](https://railway.com) — file
+`Procfile`, `railway.json`, dan `.python-version` sudah disertakan di repo.
+
+1. Buka https://railway.com → login pakai akun **GitHub** kamu.
+2. Klik **New Project** → **Deploy from GitHub repo**.
+3. Pilih repo **`kiroadver/telegram-pinterest-bot`**
+   (beri izin akses repo ke Railway jika diminta).
+4. Buka service yang terbuat → tab **Variables** → tambahkan:
+   - `BOT_TOKEN` = token bot dari @BotFather
+5. Railway akan rebuild & restart otomatis.
+6. Buka tab **Deployments** → **View Logs**, pastikan muncul
+   `✅ Bot Pinterest berjalan...`
+7. Tes kirim pesan ke bot di Telegram. 🎉
+
+**Catatan Railway:**
+
+- Bot ini *polling* (bukan web server), jadi **tidak perlu**
+  public domain / port.
+- Railway adalah layanan berbayar — akun baru biasanya dapat kredit
+  trial. Cek harga terbaru di https://railway.com/pricing
+- Kalau ada perubahan file di GitHub, cukup push → Railway redeploy
+  otomatis.
+
 ## Cara kerja (singkat)
 
 1. Bot membuka halaman `id.pinterest.com/search/pins/?q=...` untuk mengambil
