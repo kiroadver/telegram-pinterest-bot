@@ -1,16 +1,21 @@
-# Bot Telegram Pencari Foto Pinterest (Tanpa API)
+# Bot Telegram: Foto Pinterest + Lagu YouTube (MP3)
 
-Bot Telegram untuk mencari foto di Pinterest dan mengirim **maksimal 5 foto**
-langsung ke chat — **tanpa API resmi Pinterest** (menggunakan teknik
-web scraping pada halaman pencarian Pinterest).
+Bot Telegram serbaguna:
+1. **Cari foto Pinterest** — mengirim **maksimal 5 foto** ke chat,
+   **tanpa API resmi Pinterest** (memakai teknik web scraping).
+2. **Cari & download lagu dari YouTube** — tampilkan 5 hasil pencarian,
+   user pilih lewat tombol, lagu dikirim sebagai **MP3**.
 
 ## Fitur
 
 - 🔎 Cari foto Pinterest berdasarkan kata kunci
 - 📸 Kirim hasil sebagai album berisi maksimal 5 foto
-- 📝 Caption berisi judul pin + keyword
-- 🔁 Bisa lewat perintah `/pinterest <kata kunci>` atau langsung kirim teks
-- 🚫 Tidak butuh API key Pinterest, login, maupun kartu kredit
+- 🎵 Cari lagu YouTube: `/lagu <judul>` → 5 hasil dengan tombol pilihan
+- ⬇️ Download lagu → convert otomatis ke **MP3 192kbps** lalu kirim
+- ⏱ Lagu di atas 10 menit otomatis difilter (hindari kompilasi/playlist)
+- 🔁 Bisa lewat perintah atau langsung kirim teks (default = Pinterest)
+- 🚫 Tidak butuh API key Pinterest/YouTube, login, maupun kartu kredit
+- 🤖 Siap deploy Railway (facilities ffmpeg + deno via `nixpacks.toml`)
 
 ## 1. Buat bot di Telegram
 
@@ -74,7 +79,23 @@ Jika muncul `✅ Bot Pinterest berjalan...`, buka Telegram dan chat bot kamu.
 |---|---|
 | `/start` atau `/help` | Panduan singkat |
 | `/pinterest kucing lucu` | Cari foto "kucing lucu", kirim maks 5 foto |
-| Langsung ketik `wallpaper aesthetic` | Sama, tanpa perlu perintah |
+| `/lagu sepuluh ribu` | Cari lagu di YouTube, pilih 1 dari 5 hasil, kirim MP3 |
+| Langsung ketik `wallpaper aesthetic` | Sama seperti `/pinterest` |
+
+## Catatan penting
+
+- **ffmpeg**: dibutuhkan untuk konversi MP3. Di Railway sudah otomatis
+  terinstall via `nixpacks.toml`. Untuk jalan di komputer sendiri,
+  cukup `pip install imageio-ffmpeg` (sudah ada di requirements) —
+  atau install ffmpeg ke PATH secara manual.
+- Karena ini **bukan API resmi**, Pinterest/YouTube bisa mengubah strukturnya
+  sewaktu-waktu. Jika bot tiba-tiba error, besar kemungkinan endpoint/
+  header perlu disesuaikan lagi.
+- Jangan melakukan pencarian terlalu cepat berturut-turut (spam) agar
+  tidak kena rate limit.
+- Foto & lagu hasil pencarian tetap milik pemilik aslinya. Download lagu
+  dari YouTube hanya untuk keperluan pribadi — patuhi ketentuan YouTube
+  dan hukum hak cipta yang berlaku.
 
 ## Deploy ke Railway (bot online 24 jam)
 
@@ -111,12 +132,6 @@ Bot ini sudah siap deploy ke [Railway](https://railway.com) — file
 3. Bot memilih sampai 5 gambar (ukuran `736x`, cukup tajam namun ringan)
    lalu mengirimkannya via `send_media_group` (album) atau `send_photo`
    bila hanya 1 hasil.
-
-## Catatan penting
-
-- Karena ini **bukan API resmi**, Pinterest bisa mengubah strukturnya
-  sewaktu-waktu. Jika bot tiba-tiba error, besar kemungkinan endpoint/
-  header perlu disesuaikan lagi.
-- Jangan melakukan pencarian terlalu cepat berturut-turut (spam) agar
-  tidak kena rate limit dari Pinterest.
-- Foto hasil pencarian tetap milik pemilik aslinya — gunakan secara wajar.
+4. Untuk lagu, bot memakai `yt-dlp` mencari 5 video YouTube, mengambil
+   audio terbaik (`bestaudio`), lalu mengonversinya ke MP3 memakai
+   `ffmpeg` sebelum dikirim via `send_audio`.
