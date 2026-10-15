@@ -223,29 +223,55 @@ def cari_lagu_youtube(query: str, limit: int = 5) -> list:
     return hasil
 
 
+# Urutan player client untuk menghindari blokir YouTube (403/sign-in)
+# terutama dari IP server/datacenter — dicoba satu per satu sampai berhasil.
+_YT_CLIENT_FALLBACK = [
+    ["android", "mweb"],
+    ["tv_embedded", "tv"],
+    ["ios"],
+    ["web", "mweb"],
+]
+
+
 def download_mp3(video_id: str):
     """
     Download audio YouTube lalu konversi ke MP3.
     Return: (path_mp3, info, tmpdir) — tmpdir harus dibersihkan pemanggil.
     """
     tmpdir = tempfile.mkdtemp(prefix="ytmp3_")
-    opts = {
+    path = os.path.join(tmpdir, f"{video_id}.mp3")
+    base_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(tmpdir, f"{video_id}.%(ext)s"),
         "quiet": True,
         "no_warnings": True,
+        "noplaylist": True,
         "ffmpeg_location": _ffmpeg_dir(),
+        "retries": 3,
+        "fragment_retries": 3,
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "mp3",
             "preferredquality": "192",
         }],
     }
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(f"https://youtu.be/{video_id}", download=True)
 
-    path = os.path.join(tmpdir, f"{video_id}.mp3")
-    return path, info, tmpdir
+    last_err = None
+    for clients in _YT_CLIENT_FALLBACK:
+        opts = dict(base_opts)
+        opts["extractor_args"] = {"youtube": {"player_client": clients}}
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(f"https://youtu.be/{video_id}",
+                                        download=True)
+            if os.path.exists(path):
+                return path, info, tmpdir
+        except Exception as e:
+            last_err = e
+            continue
+
+    raise ValueError(
+        f"YouTube menolak permintaan download. {str(last_err)[:150]}")
 
 
 def kirim_hasil_lagu(message, query: str):
