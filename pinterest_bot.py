@@ -423,4 +423,18 @@ if __name__ == "__main__":
             "   Windows   : set BOT_TOKEN=1234:abcd && python pinterest_bot.py")
 
     print("✅ Bot berjalan... (Ctrl+C untuk berhenti)")
-    bot.infinity_polling(skip_pending=True, timeout=20)
+    # Loop anti-crash: timeout jaringan, konflik 409 saat redeploy,
+    # atau error sementara lainnya -> tunggu 5 detik lalu polling lagi
+    # tanpa perlu restart container.
+    pertama = True
+    while True:
+        try:
+            bot.infinity_polling(skip_pending=pertama, timeout=20)
+            pertama = False
+        except KeyboardInterrupt:
+            break
+        except Exception as e:
+            pertama = False
+            print(f"⚠️ Polling error ({type(e).__name__}): {str(e)[:120]} "
+                  "— mencoba lagi dalam 5 detik...")
+            time.sleep(5)
