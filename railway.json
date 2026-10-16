@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "pip install --upgrade -q yt-dlp && python pinterest_bot.py",
+    "startCommand": "pip install --upgrade -q yt-dlp && python -u pinterest_bot.py",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
